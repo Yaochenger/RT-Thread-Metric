@@ -61,7 +61,7 @@ void tm_message_processing_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_message_processing_main(void)
 {
 
 	/* Initialize the test.  */

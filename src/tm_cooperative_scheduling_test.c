@@ -67,7 +67,7 @@ void tm_cooperative_scheduling_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_cooperative_scheduling_main(void)
 {
 
 	/* Initialize the test.  */

@@ -59,7 +59,7 @@ void tm_memory_allocation_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_memory_allocation_main(void)
 {
 
 	/* Initialize the test.  */

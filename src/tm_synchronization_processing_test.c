@@ -59,7 +59,7 @@ void tm_synchronization_processing_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_synchronization_processing_main(void)
 {
 
 	/* Initialize the test.  */

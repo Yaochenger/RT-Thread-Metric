@@ -67,7 +67,7 @@ void tm_interrupt_preemption_thread_report(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_interrupt_preemption_processing_main(void)
 {
 
 	/* Initialize the test.  */

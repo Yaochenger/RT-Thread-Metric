@@ -67,7 +67,7 @@ void tm_preemptive_scheduling_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_preemptive_scheduling_main(void)
 {
 
 	/* Initialize the test.  */

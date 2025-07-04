@@ -69,7 +69,7 @@ void tm_basic_processing_initialize(void);
 
 /* Define main entry point.  */
 
-int main(void)
+int tm_basic_processing_main(void)
 {
 	/* Initialize the test.  */
 	tm_initialize(tm_basic_processing_initialize);
