@@ -189,6 +189,8 @@ int tm_semaphore_put(int semaphore_id)
 extern unsigned int   trap_flag;
 void tm_cause_interrupt(void)
 {
+#if defined(ARCH_RISCV)
+#else
     /* Trigger SVC interrupt with a unique number not used by RT-Thread */
     if (trap_flag == 255)
         asm("SVC #255");
@@ -196,6 +198,7 @@ void tm_cause_interrupt(void)
         asm("SVC #254");
     else
         ;
+#endif
 }
 
 /*
@@ -246,6 +249,8 @@ void tm_thread_detach(void)
  */
 void SVC_Handler(void)
 {
+#if defined(SOC_VEXPRESS_A9) || defined(ARCH_RISCV)
+#else
     uint32_t *stack_pointer;
     __asm volatile ("MRS %0, PSP" : "=r" (stack_pointer));
     uint8_t svc_number = ((uint8_t *) (stack_pointer[6]))[-2];
@@ -263,6 +268,7 @@ void SVC_Handler(void)
     default:
         break;
     }
+#endif
 }
 
 void thread_metric(int argc, char *argv[])
