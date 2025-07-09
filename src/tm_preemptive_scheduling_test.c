@@ -271,7 +271,7 @@ void tm_preemptive_thread_report(void)
         printf("+------------------------------------------+------------+------------+------------+\n"
                "| %-40s | %-10lu | %-10lu | %-10lu |\n",
                "Preemptive Scheduling Test",
-               total - last_total, relative_time, rt_tick_get(), rt_tick_get());
+               total - last_total, relative_time, rt_tick_get());
         /* Save the last total.  */
         last_total = total;
 
