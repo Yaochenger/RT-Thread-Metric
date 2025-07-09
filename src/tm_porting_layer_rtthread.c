@@ -274,7 +274,6 @@ void thread_metric(int argc, char *argv[])
 {
     rt_err_t result;
     rt_uint8_t priority = 10;
-    rt_uint8_t temp_priority;
     rt_thread_t tshell_tid = RT_NULL;
 
     if (argc == 1)
@@ -292,7 +291,6 @@ void thread_metric(int argc, char *argv[])
     }
 
     tshell_tid = rt_thread_find("tshell");
-    temp_priority = tshell_tid->current_priority;
     if (tshell_tid != RT_NULL)
     {
         result = rt_thread_control(tshell_tid, RT_THREAD_CTRL_CHANGE_PRIORITY, &priority);
@@ -320,6 +318,7 @@ void thread_metric(int argc, char *argv[])
         printf("thread metric failed\n");
     }
 
-    rt_thread_control(tshell_tid, RT_THREAD_CTRL_CHANGE_PRIORITY, &temp_priority);
+    priority = 20;
+    rt_thread_control(tshell_tid, RT_THREAD_CTRL_CHANGE_PRIORITY, &priority);
 }
 MSH_CMD_EXPORT(thread_metric, Thread-Metric for RT-Thread)
