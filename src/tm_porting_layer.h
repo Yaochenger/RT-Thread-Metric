@@ -12,6 +12,7 @@
 #define TM_PORTING_LAYER_H
 
 #include <stdio.h>
+#include "tm_config.h"
 
 extern void tm_cause_interrupt(void);
 

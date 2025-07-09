@@ -63,14 +63,14 @@ void tm_interrupt_handler(void);
 void tm_interrupt_processing_initialize(void);
 
 /* Define main entry point.  */
-
-int tm_interrupt_preemption_processing_main(void)
+extern unsigned int   trap_flag;
+int tm_interrupt_processing_main(void)
 {
+    trap_flag = 254;
+    /* Initialize the test.  */
+    tm_initialize(tm_interrupt_processing_initialize);
 
-	/* Initialize the test.  */
-	tm_initialize(tm_interrupt_processing_initialize);
-
-	return 0;
+    return 0;
 }
 
 /* Define the interrupt processing test initialization.  */
@@ -78,62 +78,62 @@ int tm_interrupt_preemption_processing_main(void)
 void tm_interrupt_processing_initialize(void)
 {
 
-	/* Create thread that generates the interrupt at priority 10.  */
-	tm_thread_create(0, 10, tm_interrupt_thread_0_entry);
+    /* Create thread that generates the interrupt at priority CONFIG_MAIN_THREAD_PRIORITY + 1.  */
+    tm_thread_create(0, CONFIG_MAIN_THREAD_PRIORITY + 1, tm_interrupt_thread_0_entry);
 
-	/*
-	 * Create a semaphore that will be posted from the interrupt
-	 * handler.
-	 */
-	tm_semaphore_create(0);
+    /*
+     * Create a semaphore that will be posted from the interrupt
+     * handler.
+     */
+    tm_semaphore_create(0);
 
-	/* Resume just thread 0.  */
-	tm_thread_resume(0);
+    /* Resume just thread 0.  */
+    tm_thread_resume(0);
 
-	tm_interrupt_thread_report();
+    tm_interrupt_thread_report();
 }
 
 /* Define the thread that generates the interrupt.  */
 void tm_interrupt_thread_0_entry(void *p1, void *p2, void *p3)
 {
 
-	int status;
+    int status;
 
-	/* Pickup the semaphore since it is initialized to 1 by default. */
-	status = tm_semaphore_get(0);
+    /* Pickup the semaphore since it is initialized to 1 by default. */
+    status = tm_semaphore_get(0);
 
-	/* Check for good status.  */
-	if (status != TM_SUCCESS) {
-		return;
-	}
+    /* Check for good status.  */
+    if (status != TM_SUCCESS) {
+        return;
+    }
 
-	while (1) {
+    while (1) {
 
-		/*
-		 * Force an interrupt. The underlying RTOS must see that the
-		 * the interrupt handler is called from the appropriate software
-		 * interrupt or trap.
-		 */
+        /*
+         * Force an interrupt. The underlying RTOS must see that the
+         * the interrupt handler is called from the appropriate software
+         * interrupt or trap.
+         */
 
-		TM_CAUSE_INTERRUPT;
+        TM_CAUSE_INTERRUPT;
 
-		/*
-		 * We won't get back here until the interrupt processing is
-		 * complete, including the setting of the semaphore from the
-		 * interrupt handler.
-		 */
+        /*
+         * We won't get back here until the interrupt processing is
+         * complete, including the setting of the semaphore from the
+         * interrupt handler.
+         */
 
-		/* Pickup the semaphore set by the interrupt handler. */
-		status = tm_semaphore_get(0);
+        /* Pickup the semaphore set by the interrupt handler. */
+        status = tm_semaphore_get(0);
 
-		/* Check for good status.  */
-		if (status != TM_SUCCESS) {
-			return;
-		}
+        /* Check for good status.  */
+        if (status != TM_SUCCESS) {
+            return;
+        }
 
-		/* Increment this thread's counter.  */
-		tm_interrupt_thread_0_counter++;
-	}
+        /* Increment this thread's counter.  */
+        tm_interrupt_thread_0_counter++;
+    }
 }
 
 /*
@@ -143,60 +143,61 @@ void tm_interrupt_thread_0_entry(void *p1, void *p2, void *p3)
  */
 void tm_interrupt_handler(void)
 {
-	/* Increment the interrupt count.  */
-	tm_interrupt_handler_counter++;
+    /* Increment the interrupt count.  */
+    tm_interrupt_handler_counter++;
 
-	/* Put the semaphore from the interrupt handler.  */
-	tm_semaphore_put(0);
+    /* Put the semaphore from the interrupt handler.  */
+    tm_semaphore_put(0);
 }
 
 /* Define the interrupt test reporting function.  */
 void tm_interrupt_thread_report(void)
 {
 
-	unsigned long total;
-	unsigned long last_total;
-	unsigned long relative_time;
-	unsigned long average;
+    unsigned long total;
+    unsigned long last_total;
+    unsigned long relative_time;
+    unsigned long average;
 
-	/* Initialize the last total.  */
-	last_total = 0;
+    /* Initialize the last total.  */
+    last_total = 0;
 
-	/* Initialize the relative time.  */
-	relative_time = 0;
+    /* Initialize the relative time.  */
+    relative_time = 0;
 
-	while (1) {
+    while (1) {
 
-		/* Sleep to allow the test to run.  */
-		tm_thread_sleep(TM_TEST_DURATION);
+        /* Sleep to allow the test to run.  */
+        tm_thread_sleep(TM_TEST_DURATION_VALUE);
 
-		/* Increment the relative time.  */
-		relative_time = relative_time + TM_TEST_DURATION;
+        /* Increment the relative time.  */
+        relative_time = relative_time + TM_TEST_DURATION_VALUE;
 
-		/* Print results to the stdio window.  */
-		printf("**** Thread-Metric Interrupt Processing Test **** Relative Time: %lu\n",
-		       relative_time);
+        /* Calculate the total of all the counters.  */
+        total = tm_interrupt_thread_0_counter + tm_interrupt_handler_counter;
 
-		/* Calculate the total of all the counters.  */
-		total = tm_interrupt_thread_0_counter + tm_interrupt_handler_counter;
+        /* Calculate the average of all the counters.  */
+        average = total / 2;
 
-		/* Calculate the average of all the counters.  */
-		average = total / 2;
+        /* See if there are any errors.  */
+        if ((tm_interrupt_thread_0_counter < (average - 1)) ||
+            (tm_interrupt_thread_0_counter > (average + 1)) ||
+            (tm_interrupt_handler_counter < (average - 1)) ||
+            (tm_interrupt_handler_counter > (average + 1))) {
 
-		/* See if there are any errors.  */
-		if ((tm_interrupt_thread_0_counter < (average - 1)) ||
-		    (tm_interrupt_thread_0_counter > (average + 1)) ||
-		    (tm_interrupt_handler_counter < (average - 1)) ||
-		    (tm_interrupt_handler_counter > (average + 1))) {
+            printf("ERROR: Invalid counter value(s). Interrupt processing test has "
+                   "failed!\n");
+        }
 
-			printf("ERROR: Invalid counter value(s). Interrupt processing test has "
-			       "failed!\n");
-		}
+        /* Show the total interrupts for the time period.  */
+        printf("+------------------------------------------+------------+------------+------------+\n"
+               "| %-40s | %-10lu | %-10lu | %-10lu |\n",
+               "Interrupt Processing Test",
+               tm_interrupt_handler_counter - last_total, relative_time, rt_tick_get());
+        /* Save the last total number of interrupts.  */
+        last_total = tm_interrupt_handler_counter;
 
-		/* Show the total interrupts for the time period.  */
-		printf("Time Period Total:  %lu\n\n", tm_interrupt_handler_counter - last_total);
-
-		/* Save the last total number of interrupts.  */
-		last_total = tm_interrupt_handler_counter;
-	}
+        tm_thread_detach();
+        return;
+    }
 }
