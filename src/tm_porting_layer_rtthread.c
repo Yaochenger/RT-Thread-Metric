@@ -35,11 +35,6 @@
 extern void tm_interrupt_preemption_handler(void);
 extern void tm_interrupt_handler(void);
 
-/* Ensure single processor system */
-#if defined(RT_USING_SMP)
-#error "*** Tests are only designed for single processor systems! ***"
-#endif
-
 /* Define thread control blocks and stacks */
 static rt_thread_t test_thread[TM_TEST_NUM_THREADS];
 
